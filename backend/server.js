@@ -10,9 +10,17 @@ require("dotenv").config();
 // Connect to MongoDB
 connectDB();
 
-// Set up middleware, routes, etc.
+// Set up middleware to parse JSON requests
 app.use(express.json());
+
+// Define a basic route for the root URL to respond to GET requests
+app.get("/", (req, res) => {
+  res.send("Welcome to the Expense Tracker API"); // Adjust this message as needed
+});
+
+// Set up other routes
 app.use("/api/rules", require("./routes/rules"));
 
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

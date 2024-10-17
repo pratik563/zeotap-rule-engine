@@ -1,10 +1,17 @@
 // routes/rules.js
+// routes/rules.js
 const express = require("express");
 const router = express.Router();
-const ruleController = require("../controllers/ruleController");
+const {
+  createRuleHandler,
+  updateRuleHandler,
+  combineRulesHandler,
+  evaluateRuleHandler,
+} = require("../controllers/ruleController");
 
-router.post("/create_rule", ruleController.createRule);
-router.post("/combine_rules", ruleController.combineRules);
-router.post("/evaluate_rule", ruleController.evaluateRule);
+router.post("/create", createRuleHandler);
+router.put("/:id", updateRuleHandler);
+router.post("/combine", combineRulesHandler);
+router.post("/evaluate", evaluateRuleHandler);
 
 module.exports = router;

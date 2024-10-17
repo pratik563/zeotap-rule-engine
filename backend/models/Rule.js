@@ -9,9 +9,8 @@ const NodeSchema = new mongoose.Schema({
   value: { type: mongoose.Schema.Types.Mixed, default: null }, // value for operand nodes
 });
 
-// Rule schema to store rule name, AST, and metadata
+// Rule schema to store AST and metadata
 const RuleSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // e.g., "Rule 1"
   ast: { type: NodeSchema, required: true }, // AST root node
   createdAt: { type: Date, default: Date.now },
 });
