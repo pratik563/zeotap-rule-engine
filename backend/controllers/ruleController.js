@@ -108,13 +108,10 @@ const validateRuleString = (ruleString) => {
 };
 
 // Create a rule and store its AST
-// controllers/ruleController.js
-// Create a rule and store its AST
 const createRuleHandler = async (req, res) => {
   try {
     const { name, ruleString } = req.body;
 
-    // Log the rule string to verify
     console.log("Received rule name:", name);
     console.log("Received rule string:", ruleString);
 
@@ -130,13 +127,13 @@ const createRuleHandler = async (req, res) => {
 
     // Create AST and save the rule
     const ast = createRule(ruleString);
+    const newRule = new Rule({ name, ruleString, ast }); // <-- Ensure name is included
 
-    const newRule = new Rule({ name, ruleString, ast });
     await newRule.save();
 
     res.status(201).json({
       message: "Rule created successfully",
-      rule: newRule,
+      rule: newRule, // <-- Make sure the response includes the full rule object
     });
   } catch (error) {
     console.error("Error creating rule:", error.message);
