@@ -46,10 +46,11 @@ const updateRuleHandler = async (req, res) => {
       .json({ message: "Error updating rule", error: error.message });
   }
 };
-
 const validateRuleString = (ruleString) => {
+  console.log(`Validating rule string: "${ruleString}"`);
+
   const stack = [];
-  const tokens = ruleString.split(/\s+/);
+  const tokens = ruleString.split(/\s+/); // Split by whitespace
   const validOperators = ["AND", "OR", ">", "<", ">=", "<=", "=", "!="];
   const validAttributes = [
     "age",
@@ -61,39 +62,65 @@ const validateRuleString = (ruleString) => {
   ];
 
   for (let token of tokens) {
+    console.log(`Current token: "${token}"`);
+
+    // Check if token is an opening parenthesis
     if (token === "(") {
       stack.push(token);
-    } else if (token === ")") {
-      if (stack.length === 0) return false; // Unmatched closing parenthesis
-      stack.pop();
-    } else if (validOperators.includes(token.toUpperCase())) {
-      continue;
-    } else {
-      const [attribute, operator] = token.split(/(>|<|=|!)/).filter(Boolean);
-      if (!validAttributes.includes(attribute.trim())) {
-        console.log(`Invalid attribute: ${attribute}`); // Debugging
-        return false; // Invalid attribute name
+    }
+    // Check if token is a closing parenthesis
+    else if (token === ")") {
+      if (stack.length === 0) {
+        console.error("Validation failed: unmatched closing parenthesis");
+        return false; // Unmatched closing parenthesis
       }
+      stack.pop();
+    }
+    // Check if token is a valid operator
+    else if (validOperators.includes(token.toUpperCase())) {
+      continue;
+    }
+    // Check if token is a valid attribute
+    else if (validAttributes.includes(token.trim())) {
+      continue;
+    }
+    // Check if token is a valid value (either a number or a quoted string)
+    else if (!isNaN(token) || /^'.*'$/.test(token)) {
+      // isNaN(token) checks if it's a number
+      // /^'.*'$/.test(token) checks if it's a string enclosed in single quotes
+      continue;
+    }
+    // If none of the above conditions are met, the token is invalid
+    else {
+      console.error(`Invalid token: "${token}"`);
+      return false;
     }
   }
 
-  return stack.length === 0; // Return true if parentheses are balanced
+  // Ensure all parentheses are closed
+  if (stack.length !== 0) {
+    console.error("Validation failed: unmatched opening parenthesis");
+    return false;
+  }
+
+  console.log("Validation successful for rule string");
+  return true;
 };
 
 // Create a rule and store its AST
 // controllers/ruleController.js
-
+// Create a rule and store its AST
 const createRuleHandler = async (req, res) => {
   try {
-    const { ruleString } = req.body;
+    const { name, ruleString } = req.body;
 
-    // Check if ruleString is provided
-    if (!ruleString) {
-      return res.status(400).json({ message: "Rule string is required" });
-    }
+    // Log the rule string to verify
+    console.log("Received rule name:", name);
+    console.log("Received rule string:", ruleString);
 
     // Validate the rule string
     if (!validateRuleString(ruleString)) {
+      console.error("Validation failed for rule string:", ruleString);
       return res.status(400).json({
         message: "Invalid rule syntax or attribute name",
         details:
@@ -101,9 +128,10 @@ const createRuleHandler = async (req, res) => {
       });
     }
 
+    // Create AST and save the rule
     const ast = createRule(ruleString);
 
-    const newRule = new Rule({ ruleString, ast });
+    const newRule = new Rule({ name, ruleString, ast });
     await newRule.save();
 
     res.status(201).json({
@@ -111,10 +139,10 @@ const createRuleHandler = async (req, res) => {
       rule: newRule,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "An error occurred while creating the rule",
-      error: error.message,
-    });
+    console.error("Error creating rule:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to create rule", error: error.message });
   }
 };
 
