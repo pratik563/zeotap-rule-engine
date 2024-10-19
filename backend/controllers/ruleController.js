@@ -108,38 +108,32 @@ const validateRuleString = (ruleString) => {
 };
 
 // Create a rule and store its AST
-const createRuleHandler = async (req, res) => {
+
+const createRuleHandler = async (req, res, next) => {
   try {
-    const { name, ruleString } = req.body;
+    const { name, ruleString } = req.body; // Extracting name and ruleString from request body
 
-    console.log("Received rule name:", name);
-    console.log("Received rule string:", ruleString);
-
-    // Validate the rule string
-    if (!validateRuleString(ruleString)) {
-      console.error("Validation failed for rule string:", ruleString);
-      return res.status(400).json({
-        message: "Invalid rule syntax or attribute name",
-        details:
-          "Ensure correct operators, balanced parentheses, and valid attributes.",
-      });
+    // Validate the input to ensure both name and ruleString are provided
+    if (!name || !ruleString) {
+      return res
+        .status(400)
+        .json({ message: "Name and ruleString are required." });
     }
 
-    // Create AST and save the rule
+    // Parse the ruleString into an AST representation
     const ast = createRule(ruleString);
-    const newRule = new Rule({ name, ruleString, ast }); // <-- Ensure name is included
 
+    // Create a new rule in the database with name, ruleString, and ast
+    const newRule = new Rule({ name, ruleString, ast });
     await newRule.save();
 
     res.status(201).json({
       message: "Rule created successfully",
-      rule: newRule, // <-- Make sure the response includes the full rule object
+      rule: newRule,
     });
   } catch (error) {
     console.error("Error creating rule:", error.message);
-    res
-      .status(500)
-      .json({ message: "Failed to create rule", error: error.message });
+    next(error);
   }
 };
 
@@ -181,9 +175,31 @@ const evaluateRuleHandler = async (req, res) => {
   }
 };
 
+const getAllRulesHandler = async (req, res) => {
+  try {
+    console.log("Fetching all rules..."); // Log to ensure the request is received
+    const rules = await Rule.find({ deleted: false }); // Fetching non-deleted rules
+    console.log("Rules fetched:", rules); // Log fetched rules for verification
+
+    res.status(200).json({
+      message: "Rules fetched successfully",
+      rules: rules,
+    });
+  } catch (error) {
+    console.error("Error fetching rules:", error.message);
+    res.status(500).json({
+      message: "Error fetching rules",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createRuleHandler,
   combineRulesHandler,
   evaluateRuleHandler,
   updateRuleHandler,
+  /*   softDeleteRuleHandler,
+  restoreRuleHandler, */
+  getAllRulesHandler,
 };

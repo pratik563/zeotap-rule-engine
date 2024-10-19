@@ -20,13 +20,9 @@ export const createRule = async (ruleData) => {
 export const getAllRules = async () => {
   try {
     const response = await axios.get(API_URL);
-    return response.data.rules;
+    return response.data.rules; // Assuming the response structure has a "rules" array
   } catch (error) {
-    console.error(
-      "Error fetching rules:",
-      error.response ? error.response.data : error.message
-    );
-    throw error;
+    throw new Error("Failed to fetch rules.");
   }
 };
 
@@ -45,18 +41,14 @@ export const combineRules = async (ruleStrings) => {
 };
 
 // Evaluate a rule
-export const evaluateRule = async (ruleId, userData) => {
+export const evaluateRule = async (evaluationData) => {
   try {
-    const response = await axios.post(`${API_URL}/evaluate`, {
-      ruleId,
-      userData,
-    });
-    return response.data;
+    const response = await axios.post(`${API_URL}/evaluate`, evaluationData);
+    return response.data; // Assuming the backend response contains the evaluation result
   } catch (error) {
-    console.error(
-      "Error evaluating rule:",
-      error.response ? error.response.data : error.message
-    );
-    throw error;
+    const errorMessage = error.response
+      ? error.response.data.message || error.response.data
+      : "An unexpected error occurred";
+    throw new Error(errorMessage);
   }
 };

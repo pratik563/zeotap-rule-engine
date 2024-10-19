@@ -1,22 +1,21 @@
 // models/Rule.js
-// models/Rule.js
 const mongoose = require("mongoose");
 
 // Define the structure of an AST node
 const NodeSchema = new mongoose.Schema({
   type: { type: String, required: true }, // "operator" or "operand"
-  left: { type: mongoose.Schema.Types.Mixed, default: null }, // reference to left child node
-  right: { type: mongoose.Schema.Types.Mixed, default: null }, // reference to right child node
-  value: { type: mongoose.Schema.Types.Mixed, default: null }, // value for operand nodes
+  left: { type: mongoose.Schema.Types.Mixed, default: null },
+  right: { type: mongoose.Schema.Types.Mixed, default: null },
+  value: { type: mongoose.Schema.Types.Mixed, default: null },
 });
 
-// Rule schema to store AST and metadata
+// Rule schema to store AST, name, rule string, and metadata
 const RuleSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // <-- Ensure the name field is defined here
-  ruleString: { type: String, required: true },
-  ast: { type: NodeSchema, required: true }, // AST root node
-  createdAt: { type: Date, default: Date.now },
+  name: { type: String, required: true }, // Add this field to store the name of the rule
+  ruleString: { type: String, required: true }, // Add this field to store the rule string
+  ast: { type: NodeSchema, required: true },
   deleted: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("Rule", RuleSchema);

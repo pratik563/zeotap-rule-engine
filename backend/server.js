@@ -1,6 +1,7 @@
+// server.js
 const express = require("express");
 const connectDB = require("./config/database");
-const cors = require("cors"); // Import CORS package
+const cors = require("cors");
 const app = express();
 
 // Load environment variables from .env file
@@ -8,6 +9,9 @@ require("dotenv").config();
 
 // Connect to MongoDB
 connectDB();
+
+// Set up middleware to parse JSON requests
+app.use(express.json());
 
 // Use CORS middleware
 app.use(
@@ -18,16 +22,13 @@ app.use(
   })
 );
 
-// Set up middleware to parse JSON requests
-app.use(express.json());
-
 // Define a basic route for the root URL to respond to GET requests
 app.get("/", (req, res) => {
   res.send("Welcome to the Expense Tracker API"); // Adjust this message as needed
 });
 
 // Set up other routes
-app.use("/api/rules", require("./routes/rules"));
+app.use("/api/rules", require("./routes/rules")); // <-- Ensure this points to the correct routes file
 
 // Start the server
 const PORT = process.env.PORT || 5000;
